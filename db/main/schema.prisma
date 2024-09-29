@@ -1,4 +1,3 @@
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -6,9 +5,19 @@ generator client {
 datasource db {
     provider = "postgresql" // or your preferred database provider
     url      = env("DATABASE_URL")
-    
 }
 
+model MasterApiView {
+    id                 Int      @id @default(autoincrement())
+    viewName           String?  @unique
+    fieldNamesSelected String[]
+}
+
+model MasterApiTable {
+    id        Int     @id @default(autoincrement())
+    tableName String? @unique
+    fieldNamesSelected String[]
+}
 
 model MasterUser {
     id             Int         @id @default(autoincrement())
@@ -20,7 +29,6 @@ model MasterUser {
     updatedAt      DateTime?   @updatedAt()
     bookBorrowedId Int?
     bookBorrowed   MasterBook? @relation(fields: [bookBorrowedId], references: [id])
-
 }
 
 model MasterBook {
