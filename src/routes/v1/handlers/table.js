@@ -2,7 +2,7 @@ import db from "../../../../db/db.js";
 import helper from "../helpers/helper.js";
 import pkg from "pg"; // Use default import
 const { Client } = pkg;
-
+import { Prisma } from "@prisma/client";
 import config from "../../../../config/config.js";
 const { main } = db;
 const client = new Client({
@@ -62,30 +62,30 @@ const createData = async (req, res, next) => {
       },
     });
   
-
-    const filteredBody = pickKeys(req.body, tableAPi.fieldNamesSelected);
+    const columns = Object.keys(req.body[0]);
+    const values = req.body.map(row => columns.map(column => row[column]));
 
   //  const sqlColumns = `(${filteredBody.join(", ")})`;
-    const arrayOfKeys = Object.keys(filteredBody);
-    const arrayOfValues = Object.values(filteredBody);
-    const sqlColumns = `(${arrayOfKeys.join(", ")})`;
-    const sqlrows = `(${arrayOfValues.join(", ")})`;
-    console.log("Eat",`
-    INSERT INTO ${tableName} ${sqlColumns}
-VALUES ${sqlrows};
-  `)
-    const tablesQuery = await main.$queryRaw`
-    INSERT INTO ${tableName} ${sqlColumns}
-VALUES ${main.join(
-    testArr.map((row) => Prisma.sql`(${Prisma.join(row)})`)
-  )};
-  `;
-  console.log("tablesQuery",tablesQuery)
+
+console.log("va",values)
+const formattedString = `(${values[0].map(item => `'${item}'`).join(', ')})`;
+
+
+/*     const tablesQuery = await main.$queryRaw`
+  INSERT INTO ${tableName} (${Prisma.raw(columns.join(', '))})
+  VALUES (patrick,book);
+` */
+console.log("col",columns)
+const createTableQuery = `
+ INSERT INTO "${tableName}" (${columns.join(', ')})
+  VALUES ${formattedString}
+`;
+await client.query(createTableQuery)
 
     return res.json({
       status: 200,
-      message: "create table succesfully",
-      data: data,
+      message: "insert data succesfully",
+      data: "insert data successfully",
     });
   } catch (e) {
     console.log(e);
